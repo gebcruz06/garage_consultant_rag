@@ -1,7 +1,7 @@
 import fitz
 import os
-import io
 from PIL import Image
+import io
 
 def convert_pdf_to_markdown(input_pdf, output_md, image_dir):
 
@@ -14,7 +14,6 @@ def convert_pdf_to_markdown(input_pdf, output_md, image_dir):
         markdown_output = []
 
         # Track images to avoid saving duplicates
-        image_count = 0
         image_references = {}
 
         for page_num in range(doc.page_count):
@@ -27,29 +26,41 @@ def convert_pdf_to_markdown(input_pdf, output_md, image_dir):
             # Extract and process images
             images = page.get_images(full=True)
             for img_index, img_info in enumerate(images):
-                xref = img_info[0]
-                if xref not in image_references:
-                    image_count += 1
-                    base_filename = os.path.splitext(os.path.basename(input_pdf))[0]
+                try:
+                    xref = img_info[0]
                     
-                    # Generate a unique filename for the image
-                    image_filename = f"{base_filename}_page_{page_num+1}_img_{img_index+1}.png"
-                    image_path = os.path.join(image_dir, image_filename)
-                    
-                    # Extract and save the image
-                    pix = fitz.Pixmap(doc, xref)
-                    if pix.alpha:
-                        # Convert to RGBA for saving with alpha channel
-                        img_data = Image.open(io.BytesIO(pix.tobytes()))
-                        img_data.save(image_path)
-                    else:
-                        pix.save(image_path)
-                    
-                    image_references[xref] = image_filename
+                    # Only process each unique image once
+                    if xref not in image_references:
+                        base_filename = os.path.splitext(os.path.basename(input_pdf))[0]
+                        
+                        # Generate a unique filename for the image
+                        image_filename = f"{base_filename}_page_{page_num+1}_img_{img_index+1}.png"
+                        image_path = os.path.join(image_dir, image_filename)
+                        
+                        # Extract the raw image
+                        image_dict = doc.extract_image(xref)
+                        img_bytes = image_dict["image"]
+                        img_ext = image_dict["ext"]
+                        
+                        # Open with PIL to normalize to PNG
+                        img_data = Image.open(io.BytesIO(img_bytes))
+                        img_data = img_data.convert("RGB")  # normalize
+                        img_data.save(image_path, format="PNG")
+                        
+                        image_references[xref] = image_filename
 
-                # Add Markdown reference to the image
-                image_filename = image_references[xref]
-                markdown_output.append(f"\n![Image {image_count}]({os.path.join(os.path.basename(image_dir), image_filename)})\n")
+                    # Add Markdown reference to the image
+                    image_filename = image_references[xref]
+                    
+                    # Use a relative path for markdown
+                    relative_image_path = os.path.join('images', image_filename)
+                    
+                    markdown_output.append(f"\n![Image]({relative_image_path})\n")
+                
+                except Exception as e:
+                    print(f"Failed to process image {img_index+1} on page {page_num+1}: {e}")
+                    markdown_output.append(f"\n[Could not extract image {img_index+1} from page {page_num+1}]\n")
+                    continue
 
         # Join all parts and save to the markdown file
         final_markdown = "\n".join(markdown_output)
@@ -62,12 +73,19 @@ def convert_pdf_to_markdown(input_pdf, output_md, image_dir):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# Define file paths
-input_pdf = "data/raw/AVK310_P22(9900B-40257-010).pdf"
-output_md = "data/processed/AVK310_P22(9900B-40257-010).md"
+# Define the root directories
+input_dir = "data/raw"
+output_dir = "data/processed"
+images_dir = os.path.join(output_dir, 'images')
 
-# Define the directory where images will be saved
-image_dir = os.path.join(os.path.dirname(output_md), 'images')
+# Loop through all files in the input directory
+for filename in os.listdir(input_dir):
+    if filename.endswith(".pdf"):
+        input_pdf = os.path.join(input_dir, filename)
+        
+        # Define output file and image directory based on the PDF filename
+        base_filename = os.path.splitext(filename)[0]
+        output_md = os.path.join(output_dir, f"{base_filename}.md")
 
-# Run the conversion
-convert_pdf_to_markdown(input_pdf, output_md, image_dir)
+        # Run the conversion for the current PDF
+        convert_pdf_to_markdown(input_pdf, output_md, images_dir)
