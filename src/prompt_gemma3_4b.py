@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+chroma_db = "chroma_db_gemma3_4b"
+
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("Missing GOOGLE_API_KEY")
@@ -19,7 +21,7 @@ qa_chain = RetrievalQA.from_chain_type(
         temperature=0.2
     ),
     retriever=Chroma(
-        persist_directory="chroma_db_gemma3_4b",
+        persist_directory=chroma_db,
         embedding_function=GoogleGenerativeAIEmbeddings(
             model="models/embedding-001",
             google_api_key=api_key
