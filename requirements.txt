@@ -1,5 +1,4 @@
-PyMuPDF
-Pillow
+markitdown
 langchain
 langchain-chroma
 langchain_google_genai

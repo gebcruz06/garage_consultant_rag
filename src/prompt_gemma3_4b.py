@@ -10,7 +10,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("Missing GOOGLE_API_KEY")
 
-print("📂 Loading existing ChromaDB...")
+print("Loading existing ChromaDB...")
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=GoogleGenerativeAI(
@@ -28,13 +28,13 @@ qa_chain = RetrievalQA.from_chain_type(
     return_source_documents=True
 )
 
-print("\n🔎 Interactive QA ready! Type your questions below.")
+print("\n🔎 Interactive Q&A ready! Type your questions below.")
 print("Type 'exit' to quit.\n")
 
 while True:
     query = input("❓ Your question: ")
     if query.lower() in ["exit", "quit", "q"]:
-        print("👋 Exiting QA session.")
+        print("👋 Exiting Q&A session.")
         break
 
     result = qa_chain.invoke({"query": query})
