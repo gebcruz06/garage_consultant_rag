@@ -31,7 +31,7 @@ if __name__ == "__main__":
             print(f"\n {step_description}")
             run_script(script_name)
         else:
-            print(f"\n {step_description.split(':')[0]} already done, skipping...")
+            print(f"\n {step_description.split(':')[0]}: already done, skipping...")
 
     # Step 3: Prompting and Querying (always runs)
     print("\n Step 3: Prompting and Querying...")
