@@ -10,7 +10,6 @@ def convert_pdf_to_markdown(input_pdf, output_md, image_dir, dpi=200):
 
         doc = fitz.open(input_pdf)
         markdown_output = []
-        image_references = {}
         base_filename = os.path.splitext(os.path.basename(input_pdf))[0]
 
         for page_num in range(doc.page_count):
@@ -21,26 +20,7 @@ def convert_pdf_to_markdown(input_pdf, output_md, image_dir, dpi=200):
             if text.strip():  # Only add non-empty text
                 markdown_output.append(text.strip())
 
-            # Extract embedded images
-            for img_index, img_info in enumerate(page.get_images(full=True)):
-                try:
-                    xref = img_info[0]
-                    if xref not in image_references:
-                        image_filename = f"{base_filename}_page_{page_num+1}_img_{img_index+1}.png"
-                        image_path = os.path.join(image_dir, image_filename)
-
-                        img_bytes = doc.extract_image(xref)["image"]
-                        Image.open(io.BytesIO(img_bytes)).convert("RGB").save(image_path, "PNG")
-                        
-                        image_references[xref] = image_filename
-
-                    relative_path = os.path.join('images', image_references[xref])
-                    markdown_output.append(f"\n![Image]({relative_path})\n")
-
-                except Exception as e:
-                    print(f"Failed to extract image {img_index+1} on page {page_num+1}: {e}")
-
-            # Render full page as fallback
+            # Render full page as image
             try:
                 page_img_filename = f"{base_filename}_page_{page_num+1}_full.png"
                 page_img_path = os.path.join(image_dir, page_img_filename)

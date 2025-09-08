@@ -19,8 +19,8 @@ with open(file_path, "r", encoding="utf-8") as f:
     markdown_text = f.read()
 
 chunks = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200,
+    chunk_size=2048,
+    chunk_overlap=0,
     separators=["\n\n", "\n", " ", ""]
 ).split_text(markdown_text)
 
