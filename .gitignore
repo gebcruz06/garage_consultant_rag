@@ -1,6 +1,5 @@
 data/processed/
-data/processed/images/
-chroma_db_gemma3_4b/
+chroma_db_google_genai/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
