@@ -7,7 +7,6 @@ def convert_pdf_to_markdown(input_pdf, output_md):
 
         md_content = to_markdown(input_pdf)
 
-        # Keep only non-empty rows
         non_empty_lines = [line for line in md_content.splitlines() if line.strip()]
 
         with open(output_md, "w", encoding="utf-8") as f:
