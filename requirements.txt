@@ -1,6 +1,5 @@
-markitdown
+pymupdf4llm
 langchain
 langchain-chroma
 langchain_google_genai
-chromadb
 dotenv

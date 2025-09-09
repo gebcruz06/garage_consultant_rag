@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     # Define the pipeline steps and their checkpoints
     pipeline_steps = [
-        ("Step 1: Pre-processing PDFs...", os.path.join("data", "processed", "Suzuki_Celerio_Gen2_Service_Manual.md"), "pre_process_pdf.py"),
-        ("Step 2: Chunking and Embedding...", "chroma_db_gemma3_4b", "chunk_embed_gemma3_4b.py"),
+        ("Step 1: Pre-processing PDFs...", os.path.join("data", "processed", "Suzuki_Celerio_Gen2_Service_Manual.md"), "pre_process_pymupdf4llm.py"),
+        ("Step 2: Chunking and Embedding...", "chroma_db_google_genai", "chunk_embed_google_genai.py"),
     ]
 
     # Run steps with checkpoints

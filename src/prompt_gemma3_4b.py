@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-chroma_db = "chroma_db_gemma3_4b"
+chroma_db = "chroma_db_google_genai"
 
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:

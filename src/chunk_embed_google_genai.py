@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 file_path = "data/processed/Suzuki_Celerio_Gen2_Service_Manual.md"
-persist_directory = "chroma_db_gemma3_4b"
+persist_directory = "chroma_db_google_genai"
 
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
@@ -19,8 +19,8 @@ with open(file_path, "r", encoding="utf-8") as f:
     markdown_text = f.read()
 
 chunks = RecursiveCharacterTextSplitter(
-    chunk_size=1024,
-    chunk_overlap=256,
+    chunk_size=2048,
+    chunk_overlap=512,
     separators=["\n\n", "\n", " ", ""]
 ).split_text(markdown_text)
 
