@@ -23,7 +23,7 @@ qa_chain = RetrievalQA.from_chain_type(
     retriever=Chroma(
         persist_directory=chroma_db,
         embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
+            model="models/text-embedding-004",
             google_api_key=api_key
         )
     ).as_retriever(search_kwargs={"k": 3}),

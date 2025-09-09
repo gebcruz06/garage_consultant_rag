@@ -29,7 +29,7 @@ print(f"Total Chunks Created: {len(chunks)}")
 vectorstore = Chroma.from_texts(
     texts=chunks,
     embedding=GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
+        model="models/text-embedding-004",
         google_api_key=api_key
     ),
     persist_directory=persist_directory
