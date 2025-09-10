@@ -12,9 +12,39 @@ api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("Missing GOOGLE_API_KEY environment variable.")
 
-# Setup retriever and chain
+# List available vector databases
+base_dir = "data/chroma_db_google_genai"  # change if your DBs are inside a specific folder
+vector_dbs = [d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))]
+
+if not vector_dbs:
+    raise ValueError("No vector databases found.")
+
+print("\n Available Models:")
+for i, db in enumerate(vector_dbs, start=1):
+    print(f"{i}. {db}")
+
+# Let user choose car model
+choice = None
+while choice is None:
+    try:
+        selection = int(input("\n Select a car model (press 0 to exit): "))
+        if selection == 0:
+            print(" Exiting program.")
+            exit(0)
+        elif 1 <= selection <= len(vector_dbs):
+            choice = vector_dbs[selection - 1]
+        else:
+            print(" Invalid choice. Please select from available options.")
+    except ValueError:
+        print("Please select from available options.")
+
+print(f"\n Loading vector database for: {choice}\n")
+
+db_path = os.path.join(base_dir, choice)
+
+# Setup retriever and chain with chosen DB
 retriever = Chroma(
-    persist_directory="chroma_db_google_genai",
+    persist_directory=db_path,
     embedding_function=GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004", google_api_key=api_key
     )
@@ -27,10 +57,9 @@ qa_chain = ConversationalRetrievalChain.from_llm(
     output_key="answer"
 )
 
-# Memory management
+# History and memory management
 store = {}
 def get_session_history(session_id: str) -> ChatMessageHistory:
-    # Retrieves or creates a session history.
     if session_id not in store:
         store[session_id] = ChatMessageHistory()
     return store[session_id]
