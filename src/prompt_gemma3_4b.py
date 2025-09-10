@@ -1,46 +1,59 @@
 import os
+from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, GoogleGenerativeAI
-from langchain.chains import RetrievalQA
-from dotenv import load_dotenv
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ChatMessageHistory
+from langchain.schema.runnable import RunnableWithMessageHistory
 
 load_dotenv()
-
-chroma_db = "chroma_db_google_genai"
 
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("Missing GOOGLE_API_KEY")
 
-print("Loading existing ChromaDB...")
+# Setup retriever and chain
+retriever = Chroma(
+    persist_directory="chroma_db_google_genai",
+    embedding_function=GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004", google_api_key=api_key
+    )
+).as_retriever(search_kwargs={"k": 3})
 
-qa_chain = RetrievalQA.from_chain_type(
-    llm=GoogleGenerativeAI(
-        model="gemma-3-4b-it",
-        google_api_key=api_key,
-        temperature=0.2
-    ),
-    retriever=Chroma(
-        persist_directory=chroma_db,
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004",
-            google_api_key=api_key
-        )
-    ).as_retriever(search_kwargs={"k": 3}),
-    return_source_documents=True
+qa_chain = ConversationalRetrievalChain.from_llm(
+    llm=GoogleGenerativeAI(model="gemma-3-4b-it", google_api_key=api_key, temperature=0.2),
+    retriever=retriever,
+    return_source_documents=True,
+    output_key="answer"
 )
 
-print("\n🔎 Interactive Q&A ready! Type your questions below.")
-print("Type 'exit' to quit.\n")
+# Memory management
+store = {}
+def get_session_history(session_id: str) -> ChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
+
+qa_with_history = RunnableWithMessageHistory(
+    qa_chain,
+    get_session_history,
+    input_messages_key="question",
+    history_messages_key="chat_history",
+    output_messages_key="answer"
+)
+
+# Interactive Q&A loop
+print("🔎 Interactive Q&A ready! Type 'exit' to quit.\n")
+session_id = "default-session"
 
 while True:
     query = input("❓ Your question: ")
     if query.lower() in ["exit", "quit", "q"]:
-        print("👋 Exiting Q&A session.")
+        print("👋 Exiting.")
         break
-
-    result = qa_chain.invoke({"query": query})
     
-    print(f"\n💡 Answer:\n{result['result']}")
-    
-    print("-" * 60)
+    result = qa_with_history.invoke(
+        {"question": query},
+        config={"configurable": {"session_id": session_id}}
+    )
+    print(f"\n💡 {result['answer']}\n" + "-" * 60)
