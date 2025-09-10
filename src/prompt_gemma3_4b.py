@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, GoogleGenerativeAI
 from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ChatMessageHistory
-from langchain.schema.runnable import RunnableWithMessageHistory
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 load_dotenv()
 
@@ -51,9 +51,10 @@ while True:
     if query.lower() in ["exit", "quit", "q"]:
         print("👋 Exiting.")
         break
-    
+            
     result = qa_with_history.invoke(
         {"question": query},
         config={"configurable": {"session_id": session_id}}
     )
+    
     print(f"\n💡 {result['answer']}\n" + "-" * 60)
