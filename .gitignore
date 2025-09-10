@@ -1,5 +1,5 @@
 data/processed/
-chroma_db_google_genai/
+data/chroma_db_google_genai/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -2,4 +2,6 @@ pymupdf4llm
 langchain
 langchain-chroma
 langchain_google_genai
+langchain_community
+langchain_core
 dotenv
