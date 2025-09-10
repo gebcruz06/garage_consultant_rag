@@ -10,7 +10,7 @@ load_dotenv()
 
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
-    raise ValueError("Missing GOOGLE_API_KEY")
+    raise ValueError("Missing GOOGLE_API_KEY environment variable.")
 
 # Setup retriever and chain
 retriever = Chroma(
@@ -30,6 +30,7 @@ qa_chain = ConversationalRetrievalChain.from_llm(
 # Memory management
 store = {}
 def get_session_history(session_id: str) -> ChatMessageHistory:
+    # Retrieves or creates a session history.
     if session_id not in store:
         store[session_id] = ChatMessageHistory()
     return store[session_id]
@@ -51,10 +52,10 @@ while True:
     if query.lower() in ["exit", "quit", "q"]:
         print("👋 Exiting.")
         break
-            
+
     result = qa_with_history.invoke(
         {"question": query},
         config={"configurable": {"session_id": session_id}}
     )
-    
+
     print(f"\n💡 {result['answer']}\n" + "-" * 60)
